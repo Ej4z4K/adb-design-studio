@@ -7,6 +7,8 @@ A browser-based Oracle Autonomous Database discovery and design workbench with t
 
 [Open the app](https://Ej4z4K.github.io/adb-design-studio/)
 
+[View the backend architecture and process flow diagrams](docs/backend-flow.md)
+
 ## Deployment paths
 
 OCI Serverless, OCI Dedicated, Exadata Cloud@Customer, AWS Serverless, AWS Dedicated, Azure Serverless and Google Cloud Serverless. Each path has its own nine sales questions plus ten shared questions. Dedicated fleet, customer-site control networks and provider-native networking remain separate. Exact offer / region / feature eligibility requires technical review.
