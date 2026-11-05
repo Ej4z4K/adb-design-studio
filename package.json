@@ -1,0 +1,6 @@
+{
+  "name": "adb-design-studio", "version": "1.0.0", "private": true, "type": "module",
+  "description": "Two-stage Oracle Autonomous Database discovery, BOM and design workbench",
+  "engines": {"node": ">=22"},
+  "scripts": {"start": "node server/dev.mjs", "test": "node --test test/*.test.mjs", "refresh-prices": "node scripts/refresh-prices.mjs", "mcp": "node server/mcp.mjs", "mcp:http": "node server/http.mjs"}
+}

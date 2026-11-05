@@ -1,0 +1,456 @@
+{
+  "common": [
+    {
+      "id": "F01",
+      "label": "What business application are we moving, and what should improve?",
+      "hint": "Application, business outcome, owner",
+      "use": "Solution scope and success measures"
+    },
+    {
+      "id": "F02",
+      "label": "How many databases and copies do you need for live use, testing and training?",
+      "hint": "Count by purpose; current/new",
+      "use": "BOM database quantities; environment boundaries"
+    },
+    {
+      "id": "F03",
+      "label": "Can your database team share a recent usage report and current data size?",
+      "hint": "Contact, report link, date, sizes",
+      "use": "Compute/storage sizing evidence"
+    },
+    {
+      "id": "F04",
+      "label": "When is the application busiest, and how much will it grow over the next two or three years?",
+      "hint": "Busy periods; users/orders; expected growth",
+      "use": "Base/peak capacity; planning horizon"
+    },
+    {
+      "id": "F05",
+      "label": "Where are the applications and people that connect to the database?",
+      "hint": "Sites, countries, cloud providers, partners",
+      "use": "HLD locations and connectivity scope"
+    },
+    {
+      "id": "F06",
+      "label": "How long can the business be without the service, and how much recent work could it afford to lose?",
+      "hint": "Outage minutes/hours; work-loss minutes",
+      "use": "Recovery design and recovery BOM"
+    },
+    {
+      "id": "F07",
+      "label": "Which other systems exchange data with this application?",
+      "hint": "Reports, files, APIs, partner systems",
+      "use": "Integration arrows and connection requirements"
+    },
+    {
+      "id": "F08",
+      "label": "Are there rules about where data stays, who can access it or how long records are kept?",
+      "hint": "Location, access and retention rules; policy owner",
+      "use": "Placement, security and backup scope"
+    },
+    {
+      "id": "F09",
+      "label": "What budget, purchase route and Oracle licenses are available?",
+      "hint": "Budget/currency; buyer; license contact",
+      "use": "Pricing route and license review"
+    },
+    {
+      "id": "F10",
+      "label": "When must this be ready, and how much downtime is allowed to move it?",
+      "hint": "Go-live date; migration window; blackout dates",
+      "use": "Delivery plan and migration BOM"
+    }
+  ],
+  "S": [
+    {
+      "id": "S01",
+      "label": "Which country or Oracle cloud location should host the database?",
+      "hint": "Preferred location; reason; alternatives",
+      "use": "Service region; placement"
+    },
+    {
+      "id": "S02",
+      "label": "Which databases need to run all day, and which can stop outside working hours?",
+      "hint": "Database list; hours; time zone",
+      "use": "Running hours; environment schedule"
+    },
+    {
+      "id": "S03",
+      "label": "Do you expect occasional busy spikes or a steady workload throughout the day?",
+      "hint": "Events; duration; frequency; spend owner",
+      "use": "Base and burst scenarios"
+    },
+    {
+      "id": "S04",
+      "label": "Must database connections stay on private company networks?",
+      "hint": "Private requirement or approved exception; security contact",
+      "use": "Private connection pattern; access controls"
+    },
+    {
+      "id": "S05",
+      "label": "Does your company already have a connection to Oracle Cloud?",
+      "hint": "Connection type; sites; capacity; network contact",
+      "use": "Reuse or add hybrid connectivity"
+    },
+    {
+      "id": "S06",
+      "label": "Is an Oracle Cloud foundation already available for accounts, access, networking and monitoring?",
+      "hint": "Existing setup; platform owner; what is missing",
+      "use": "Landing zone build or reuse scope"
+    },
+    {
+      "id": "S07",
+      "label": "If the main cloud location fails, does the application need to run from another location?",
+      "hint": "Required recovery location; app recovery owner",
+      "use": "Recovery deployment and app path"
+    },
+    {
+      "id": "S08",
+      "label": "Do you need extra copies for reporting, testing or rehearsing the move?",
+      "hint": "Copy purpose; count; size; how long retained",
+      "use": "Additional database/storage and staging lines"
+    },
+    {
+      "id": "S09",
+      "label": "Who will approve extra spending when demand increases?",
+      "hint": "Budget owner; spend limit; alert recipient",
+      "use": "Scaling policy; cost controls"
+    }
+  ],
+  "D": [
+    {
+      "id": "D01",
+      "label": "Why does the business need dedicated infrastructure?",
+      "hint": "Isolation, policy, fleet control or other reason",
+      "use": "Choice rationale; isolation boundary"
+    },
+    {
+      "id": "D02",
+      "label": "Is there existing dedicated Oracle cloud infrastructure we can use?",
+      "hint": "System/location; owner; capacity report contact",
+      "use": "Reuse versus new infrastructure"
+    },
+    {
+      "id": "D03",
+      "label": "How many databases will share it now, and what is expected over the next three years?",
+      "hint": "Inventory; planned additions; dates",
+      "use": "Fleet size and expansion plan"
+    },
+    {
+      "id": "D04",
+      "label": "Which databases become busy at the same time?",
+      "hint": "Busy-hour/batch calendar; report contact",
+      "use": "Shared capacity and peak reserve"
+    },
+    {
+      "id": "D05",
+      "label": "Which teams or environments must be kept apart?",
+      "hint": "Production/test/team groups; reason",
+      "use": "Fleet grouping and access boundaries"
+    },
+    {
+      "id": "D06",
+      "label": "When can maintenance happen, and are there applications that cannot share the same maintenance window?",
+      "hint": "Windows; time zones; exceptions",
+      "use": "Maintenance groups and availability design"
+    },
+    {
+      "id": "D07",
+      "label": "Which sites and applications need to connect, and is private Oracle Cloud connectivity already in place?",
+      "hint": "Client locations; connection owner; existing diagram",
+      "use": "Client network, DNS and hybrid scope"
+    },
+    {
+      "id": "D08",
+      "label": "Does recovery need separate infrastructure in another location?",
+      "hint": "Location; required applications; owner",
+      "use": "Standby fleet and recovery network BOM"
+    },
+    {
+      "id": "D09",
+      "label": "Who will manage shared capacity and approve new databases?",
+      "hint": "Fleet owner; operations team; approval process",
+      "use": "Administration roles and delivery scope"
+    }
+  ],
+  "C": [
+    {
+      "id": "C01",
+      "label": "Why must the database stay at your site, and which site is required?",
+      "hint": "Site/address; residency or latency reason",
+      "use": "Site choice and service scope"
+    },
+    {
+      "id": "C02",
+      "label": "Is suitable Exadata Cloud@Customer equipment already installed?",
+      "hint": "System ID/shape if known; owner; capacity contact",
+      "use": "Reuse or new infrastructure order"
+    },
+    {
+      "id": "C03",
+      "label": "Who can confirm space, power, cooling, physical access and a delivery date?",
+      "hint": "Facilities contact; readiness date; gaps",
+      "use": "Site preparation cost and schedule"
+    },
+    {
+      "id": "C04",
+      "label": "Who can provide the site network plan and available connections?",
+      "hint": "Network owner; diagram; switch/link readiness",
+      "use": "Client, backup and control network design"
+    },
+    {
+      "id": "C05",
+      "label": "Will security allow the required connection from the equipment to Oracle Cloud for management?",
+      "hint": "Security contact; approval status; restrictions",
+      "use": "Control connectivity and approval task"
+    },
+    {
+      "id": "C06",
+      "label": "Where should backups be stored, and how long should they be kept?",
+      "hint": "Preferred destination; retention; backup owner",
+      "use": "Backup capacity and path"
+    },
+    {
+      "id": "C07",
+      "label": "Is there a second site available if this site becomes unavailable?",
+      "hint": "Site; available capacity; application recovery owner",
+      "use": "Recovery infrastructure and site links"
+    },
+    {
+      "id": "C08",
+      "label": "Which applications or teams need separate access or maintenance windows?",
+      "hint": "Groups; restrictions; windows",
+      "use": "Service grouping and access design"
+    },
+    {
+      "id": "C09",
+      "label": "Who will own site facilities, networking and day-to-day service coordination?",
+      "hint": "Named owners; support hours; escalation lead",
+      "use": "Responsibility matrix and support scope"
+    }
+  ],
+  "AS": [
+    {
+      "id": "AS01",
+      "label": "Which AWS account and location run the application?",
+      "hint": "Account; region; app owner",
+      "use": "Placement and account boundary"
+    },
+    {
+      "id": "AS02",
+      "label": "Does the customer want to buy this through AWS, and who handles that purchase?",
+      "hint": "Buyer; marketplace/private offer contact",
+      "use": "Commercial route and offer validation"
+    },
+    {
+      "id": "AS03",
+      "label": "Who owns the Oracle Cloud account linked to this purchase, or who can set it up?",
+      "hint": "Oracle account owner; linking status",
+      "use": "Onboarding work and ownership"
+    },
+    {
+      "id": "AS04",
+      "label": "Which application networks, offices or partners need database access?",
+      "hint": "Network list/diagram; private-access needs",
+      "use": "AWS database connectivity scope"
+    },
+    {
+      "id": "AS05",
+      "label": "Is the required AWS network foundation ready?",
+      "hint": "Platform owner; readiness; planned changes",
+      "use": "Network service build or reuse"
+    },
+    {
+      "id": "AS06",
+      "label": "Which databases run all day, and when do demand spikes occur?",
+      "hint": "Schedules; spike length/frequency",
+      "use": "Compute hours and burst scenarios"
+    },
+    {
+      "id": "AS07",
+      "label": "Are there company rules about backup location, encryption keys or security logs?",
+      "hint": "Policy; named owners; preferred services",
+      "use": "Validate supported integrations and cost"
+    },
+    {
+      "id": "AS08",
+      "label": "Where must the application and database recover after a major outage?",
+      "hint": "Recovery location; downtime/work-loss targets",
+      "use": "Offer-specific recovery design and BOM"
+    },
+    {
+      "id": "AS09",
+      "label": "Who will support incidents involving both AWS and Oracle?",
+      "hint": "Customer lead; provider contacts; support agreements",
+      "use": "Support demarcation and handover"
+    }
+  ],
+  "AD": [
+    {
+      "id": "AD01",
+      "label": "Which AWS account and location should host this service?",
+      "hint": "Account; region; buyer; account owner",
+      "use": "Offer eligibility and placement"
+    },
+    {
+      "id": "AD02",
+      "label": "Why is dedicated infrastructure needed rather than a per-database service?",
+      "hint": "Customer isolation/control requirement",
+      "use": "Dedicated option rationale"
+    },
+    {
+      "id": "AD03",
+      "label": "Is dedicated Oracle infrastructure in AWS already available?",
+      "hint": "System/owner; capacity report; unused capacity",
+      "use": "Reuse or infrastructure purchase"
+    },
+    {
+      "id": "AD04",
+      "label": "How many databases will share it, and which get busy together?",
+      "hint": "Inventory; peak calendar; future additions",
+      "use": "Fleet size, headroom and expansion"
+    },
+    {
+      "id": "AD05",
+      "label": "Which departments, applications or maintenance windows must be separated?",
+      "hint": "Groups; windows; restrictions",
+      "use": "Fleet grouping and isolation design"
+    },
+    {
+      "id": "AD06",
+      "label": "Who owns AWS database networking and the linked Oracle Cloud account?",
+      "hint": "Network/platform/Oracle contacts; readiness",
+      "use": "Network and onboarding work"
+    },
+    {
+      "id": "AD07",
+      "label": "Which offices, applications and partner networks need access?",
+      "hint": "Network diagram; private links; client locations",
+      "use": "Application and hybrid connectivity"
+    },
+    {
+      "id": "AD08",
+      "label": "Is separate infrastructure needed for recovery, and where?",
+      "hint": "Recovery location; targets; app recovery owner",
+      "use": "Standby capacity and network BOM"
+    },
+    {
+      "id": "AD09",
+      "label": "Who approves the shared infrastructure budget and ongoing fleet changes?",
+      "hint": "Buyer; term/budget; capacity and support owners",
+      "use": "Commercial structure and operating roles"
+    }
+  ],
+  "AZ": [
+    {
+      "id": "AZ01",
+      "label": "Which Azure subscription and location run the application?",
+      "hint": "Subscription; region; application owner",
+      "use": "Placement and ownership boundary"
+    },
+    {
+      "id": "AZ02",
+      "label": "Who will purchase the service and approve its ongoing Azure charges?",
+      "hint": "Buyer; purchase route; budget owner",
+      "use": "Commercial route and service BOM"
+    },
+    {
+      "id": "AZ03",
+      "label": "Is an Oracle Cloud account already linked, or who can arrange it?",
+      "hint": "Account owner; onboarding status",
+      "use": "Onboarding scope and responsibilities"
+    },
+    {
+      "id": "AZ04",
+      "label": "Which Azure applications and networks need access?",
+      "hint": "Application services; network diagram; owners",
+      "use": "Native network and compatibility checks"
+    },
+    {
+      "id": "AZ05",
+      "label": "Can the Azure network team provide a separate network area for the database service?",
+      "hint": "Network contact; available range; readiness",
+      "use": "Delegated-subnet feasibility and IP planning"
+    },
+    {
+      "id": "AZ06",
+      "label": "Do offices, another cloud or partner systems also need access?",
+      "hint": "Sites; existing private links; latency needs",
+      "use": "Hybrid routing, DNS and connectivity BOM"
+    },
+    {
+      "id": "AZ07",
+      "label": "Which databases must stay on all day, and when are the busy periods?",
+      "hint": "Operating hours; peaks; growth",
+      "use": "Compute hours and peak estimate"
+    },
+    {
+      "id": "AZ08",
+      "label": "Are there requirements for backup location, encryption keys and audit records?",
+      "hint": "Policies; security owner; retention",
+      "use": "Offer-specific protection/security choices"
+    },
+    {
+      "id": "AZ09",
+      "label": "Where must service resume after an outage, and who supports that recovery?",
+      "hint": "Recovery location; app owner; support lead",
+      "use": "Verified DR topology and support scope"
+    }
+  ],
+  "GC": [
+    {
+      "id": "GC01",
+      "label": "Which Google Cloud project and location run the application?",
+      "hint": "Project; region; application owner",
+      "use": "Placement and project boundary"
+    },
+    {
+      "id": "GC02",
+      "label": "Who owns the cloud purchase and ongoing database budget?",
+      "hint": "Buyer; marketplace/private offer contact; budget",
+      "use": "Commercial route and service BOM"
+    },
+    {
+      "id": "GC03",
+      "label": "Is the project linked to an Oracle Cloud account, or who can arrange that?",
+      "hint": "Account/project owners; onboarding status",
+      "use": "Account linkage and delivery tasks"
+    },
+    {
+      "id": "GC04",
+      "label": "Which application networks need database access, and who manages them?",
+      "hint": "Network diagram; shared network owner; app services",
+      "use": "Native database network scope"
+    },
+    {
+      "id": "GC05",
+      "label": "Will offices, other clouds or partners connect as well?",
+      "hint": "Sites; existing links; private-access requirements",
+      "use": "Hybrid connections, routes and DNS"
+    },
+    {
+      "id": "GC06",
+      "label": "Which databases run all day, and when does demand increase?",
+      "hint": "Hours; time zones; spikes; growth",
+      "use": "Compute hours and peak capacity estimate"
+    },
+    {
+      "id": "GC07",
+      "label": "Are there rules for data location, backup storage, encryption keys or logs?",
+      "hint": "Policy; retention; security contact",
+      "use": "Supported security/protection design"
+    },
+    {
+      "id": "GC08",
+      "label": "Where must the service recover after an outage?",
+      "hint": "Recovery location; app dependencies; targets",
+      "use": "Verified recovery option and BOM"
+    },
+    {
+      "id": "GC09",
+      "label": "Who coordinates incidents across your team, Google Cloud and Oracle?",
+      "hint": "Service lead; contacts; support coverage",
+      "use": "Operational responsibility and support"
+    }
+  ]
+}

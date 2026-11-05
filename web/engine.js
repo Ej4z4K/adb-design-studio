@@ -1,0 +1,172 @@
+export const profiles={
+ S:{name:'OCI Serverless',tag:'Per database',cloud:'OCI',icon:'adb',description:'Managed databases in an OCI public region.',network:'Per-database endpoint in the selected VCN; private DNS and client security rules.',build:'Compartment → VCN / endpoint subnet → Autonomous Database. Validate endpoint rules, TLS / mTLS and client wallet handling.',extras:['Private link / FastConnect or VPN','Backup / recovery and standby capacity','Landing zone, logging, security and delivery services']},
+ D:{name:'OCI Dedicated',tag:'Reserved fleet',cloud:'OCI',icon:'dedicated',description:'Autonomous databases on dedicated Exadata infrastructure.',network:'Fleet client network and private DNS. Plan AVMC networking; do not copy Serverless endpoint rules.',build:'Exadata infrastructure → Autonomous Exadata VM cluster (AVMC) → Autonomous Container Database (ACD) → ADB. Allocate reserve and maintenance groups before databases.',extras:['Exadata infrastructure, database and storage servers','Backup storage, DR infrastructure and capacity reserve','Fleet networking, landing zone and delivery services']},
+ C:{name:'Cloud@Customer',tag:'At your site',cloud:'Customer site',icon:'exadata',description:'Oracle-managed database infrastructure at the customer site.',network:'Separate site client, backup and Oracle control connectivity. Validate supported outbound Oracle management connectivity with installation team.',build:'Approve facilities and site worksheet → install Exadata Cloud@Customer → AVMC → ACD → ADB. Oracle installation team validates control network, DNS/NTP and required outbound management destinations.',extras:['Cloud@Customer infrastructure and contract term','Facilities, switches, circuits and installation readiness','Backup destination, second site and recovery infrastructure']},
+ AS:{name:'AWS Serverless',tag:'Multicloud',cloud:'AWS',icon:'adb',description:'Serverless offer in a supported AWS location.',network:'AWS-native database network attachment and application networks; validate exact offer requirements.',build:'Verify AWS offer / region → account linkage → AWS database network → ADB. Validate native routing, DNS and service integrations for this offer.',extras:['AWS network, hybrid links, egress and observability','AWS marketplace / private offer database pricing','Offer-specific recovery, onboarding and support']},
+ AD:{name:'AWS Dedicated',tag:'Multicloud fleet',cloud:'AWS',icon:'dedicated',description:'Dedicated fleet in a supported AWS location.',network:'AWS database client network, private resolution and dedicated fleet boundaries; validate offer networking.',build:'Verify AWS Dedicated offer → account linkage and network → dedicated infrastructure → AVMC → ACD → ADB. Validate maintenance groups and region-specific recovery support.',extras:['AWS dedicated Exadata infrastructure and storage','AWS networking, hybrid links and backup services','AWS private offer, DR fleet and support']},
+ AZ:{name:'Azure Serverless',tag:'Multicloud',cloud:'Azure',icon:'adb',description:'Serverless offer in a supported Azure location.',network:'Azure VNet and supported delegated subnet; validate application service compatibility, DNS and hybrid paths.',build:'Verify subscription / offer / region → OCI account linkage → delegated subnet → ADB. Validate service delegation, IP capacity and supported Azure app access.',extras:['Azure VNet, hybrid connectivity, egress and logging','Azure commercial offer database pricing','Offer-specific recovery, onboarding and support']},
+ GC:{name:'Google Cloud Serverless',tag:'Multicloud',cloud:'Google Cloud',icon:'adb',description:'Serverless offer in a supported Google Cloud location.',network:'Google Cloud native database networking and project / shared VPC ownership; validate exact supported connection model.',build:'Verify project / offer / region → OCI linkage → supported database network attachment → ADB. Validate shared VPC ownership, DNS and hybrid routes.',extras:['Google Cloud network, hybrid links, egress and logging','Google Cloud commercial offer database pricing','Offer-specific recovery, onboarding and support']}
+};
+export const lz={repo:'https://github.com/oci-landing-zones/terraform-oci-core-landingzone',revision:'672037acf1674719faac61988debb17106051bf9',scope:'OCI foundation only. Native AWS, Azure and Google Cloud networking is designed separately. No automatic infrastructure deployment.'};
+export const refs=[
+ ['Oracle cost estimator','https://www.oracle.com/cloud/costestimator.html'],
+ ['Oracle public price catalogue','https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/'],
+ ['Serverless compute','https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/autonomous-compute-models.html'],
+ ['Dedicated capacity','https://docs.oracle.com/en/cloud/paas/autonomous-database/dedicated/adbaa/plan-and-observe-capacity-for-autonomous-ai-database-on.html'],
+ ['Cloud@Customer network requirements','https://docs.oracle.com/en-us/iaas/exadata/doc/ecc-network-requirements.html'],
+ ['Multicloud eligibility','https://docs.oracle.com/en-us/iaas/autonomous-database-serverless/doc/autonomous-ai-database-serverless-multicloud.html'],
+ ['OCI landing zone',lz.repo],['OCI icon toolkit','https://docs.oracle.com/en-us/iaas/Content/General/Reference/graphicsfordiagrams.htm']
+];
+export function fresh(){return {schema:1,profile:'',project:'',region:'',currency:'GBP',answers:{},sizing:{count:1,hours:730,growth:15,years:2,target:70,storageGrowth:15,occupancy:80,workload:'ATP',license:'Included'},network:{access:'Private',hybrid:'To confirm',lz:'To confirm',recovery:'To confirm'},details:{},lines:[],revision:1,approval:null};}
+export function change(s){s.revision++;s.approval=null;}
+export function selectedQuestions(s,questions){return [...questions.common,...(questions[s.profile]||[])];}
+export function preGaps(s,questions){let gaps=[];if(!profiles[s.profile])gaps.push('Choose a deployment option');if(!s.project.trim())gaps.push('Opportunity name');if(!s.region.trim())gaps.push('Deployment location');for(const q of selectedQuestions(s,questions)){const a=s.answers[q.id];if(!a?.value?.trim()&&a?.status!=='Unknown')gaps.push(q.id+' — answer or mark Unknown');if(a?.status==='Unknown'&&(!a.owner?.trim()||!a.due))gaps.push(q.id+' — unknown needs owner and due date');}return gaps;}
+const number=(v)=>v!==''&&v!==null&&v!==undefined&&Number.isFinite(Number(v))?Number(v):null;
+export function sizing(s){const v=s.sizing;let warnings=[];const n=k=>number(v[k]);let base=null,storage=null;const cpu=n('sourceCpu'),k=n('factor'),growth=n('growth'),years=n('years'),target=n('target');if(cpu>0&&k>0&&growth!==null&&growth>=0&&years!==null&&years>=0&&target>0&&target<=100){base=Math.ceil(cpu*(1+growth/100*years)*k/(target/100));}else warnings.push('Compute unresolved: enter measured busy CPU, pilot calibration factor, growth, horizon and target utilisation. ECPU is not a source-core conversion.');if(n('dataGB')>0&&n('storageGrowth')!==null&&n('storageGrowth')>=0&&years!==null&&years>=0&&n('tempGB')!==null&&n('tempGB')>=0&&n('occupancy')>0&&n('occupancy')<=100){storage=Math.ceil((n('dataGB')*(1+n('storageGrowth')/100*years)+n('tempGB'))/(n('occupancy')/100));}else warnings.push('Storage unresolved: enter current usable GB, temporary headroom, growth and occupancy.');if(!(n('count')>=1&&Number.isInteger(n('count'))))warnings.push('Database quantity must be a positive integer.');if(!(n('hours')>0&&n('hours')<=744))warnings.push('Monthly runtime must be 1–744 hours.');if(!v.evidence?.trim())warnings.push('Sizing evidence and pilot validation are outstanding.');return {base,storage,warnings};}
+export function skuFor(s){const byol=s.sizing.license==='BYOL',dw=s.sizing.workload==='Lakehouse';if(s.profile==='S')return dw?(byol?'B95703':'B95701'):(byol?'B95704':'B95702');if(s.profile==='D')return dw?(byol?'B95714':'B95712'):(byol?'B95715':'B95713');if(s.profile==='C')return dw?(byol?'B95710':'B95708'):(byol?'B95711':'B95709');return null;}
+export function bom(s,cat){const cap=sizing(s),v=s.sizing,p=profiles[s.profile];if(!p)return {lines:[],subtotal:0,complete:false,warnings:[]};const lines=[];const count=number(v.count),hours=number(v.hours);const qtyValid=count>=1&&Number.isInteger(count)&&hours>0&&hours<=744;
+ const add=(id,label,sku,quantity,basis)=>{const product=cat.products.find(p=>p.sku===sku),rate=product?.rates[s.currency];const valid=quantity!==null&&quantity>=0&&Number.isFinite(quantity)&&Number.isFinite(rate);lines.push({id,label,sku:product?.sku||'',unit:product?.unit||basis,quantity,rate:Number.isFinite(rate)?rate:null,amount:valid?quantity*rate:null,basis,source:product?cat.source:'Quote / validation required',status:valid?'Public list estimate':'Quote required'});};
+ const sku=skuFor(s);add('compute','Database compute',sku,cap.base&&qtyValid?cap.base*count*hours:null,'ECPU-hours; homogeneous database cohort');
+ if(s.profile==='S')add('storage','Database usable storage',v.workload==='Lakehouse'?'B95754':'B95706',cap.storage&&qtyValid?cap.storage*count:null,'GB-month; runtime does not reduce allocated storage');
+ else lines.push({id:'storage',label:'Database storage / infrastructure allocation',unit:'Offer-specific',amount:null,status:'Quote required',basis:'Validate storage entitlement, allocation and infrastructure billing for exact offer'});
+ if(s.profile==='S'&&number(v.burstEcpu)>0)add('burst','Incremental compute burst',sku,qtyValid&&number(v.burstHours)>0?number(v.burstEcpu)*number(v.burstHours)*count:null,'Additional ECPU × burst hours; excludes base already counted');
+ for(const [i,label] of p.extras.entries())lines.push({id:'extra'+i,label,unit:'Scope / quote',amount:null,status:'Quote required',basis:'Record quantities, applicability, commercial evidence and owner'});
+ for(const line of s.lines){const original=lines.findIndex(l=>l.id===line.id);const product=cat.products.find(p=>p.sku===line.sku);const rate=product?.rates[s.currency];let amount=null;let status='Quote required';let src='Customer / partner quote';
+ if(line.na&&line.evidence?.trim()){amount=0;status='Not applicable (reviewed)';}
+ else if(line.kind==='catalogue'&&product&&number(line.quantity)!==null&&number(line.quantity)>=0&&Number.isFinite(rate)&&line.confirmed&&line.evidence?.trim()){amount=Number(line.quantity)*rate;status='Public list estimate';src=cat.source;}
+ else if(line.kind==='quote'&&number(line.quantity)!==null&&number(line.quantity)>=0&&number(line.rate)!==null&&number(line.rate)>=0&&line.evidence?.trim()){amount=Number(line.quantity)*Number(line.rate);status='Entered quote';}
+ const item={...line,label:line.label||lines[original]?.label||'Additional service',amount,status,rate:line.kind==='catalogue'?rate:number(line.rate),source:src,unit:product?.unit||line.unit||'Quote unit',sku:product?.sku||line.sku||'',basis:line.evidence||'Evidence required'};if(original>=0)lines[original]=item;else lines.push(item);
+ }
+ const age=(Date.now()-Date.parse(cat.retrievedAt))/86400000;const warnings=[...cap.warnings];if(!cat.products.length)warnings.push('Price catalogue unavailable');if(!Number.isFinite(age)||age>30)warnings.push('Price catalogue is older than 30 days or undated; refresh before commercial review.');if(s.profile!=='S')warnings.push('Infrastructure, fleet reserve, minimum billing and commercial terms require offer-specific validation.');if(!sku)warnings.push('Multicloud service rates require a provider offer; OCI rates are not applied automatically.');if(s.network.recovery!=='None')warnings.push('Recovery requirements must be mapped to verified deployment support and separately priced.');
+ return {lines,subtotal:lines.reduce((a,l)=>a+(l.amount??0),0),complete:lines.every(l=>l.amount!==null)&&warnings.length===0,warnings};
+}
+export function agreementValid(s){return !!s.approval&&s.approval.revision===s.revision;}
+export function approve(s,questions,reviewer,conditions,checked){const gaps=preGaps(s,questions);if(gaps.length)throw Error('Complete the discovery register before agreement: '+gaps.slice(0,3).join('; '));if(!reviewer.trim()||!checked)throw Error('Enter approver and confirm review of BOM, HLD and open actions');if(!conditions.trim())throw Error('Record accepted assumptions / open actions, or enter None');s.approval={reviewer:reviewer.trim(),conditions:conditions.trim(),revision:s.revision,at:new Date().toISOString()};return s;}
+const f=(id,label,hint,type='textarea',options)=>({id,label,hint,type,options});
+export function detailFields(s){const fields=[
+ f('owners','Who owns implementation and operations?','Named DBA, network, security, migration, application and change approvers'),
+ f('tenancy','What is the approved account / tenancy structure?','Compartment or subscription/project IDs; environment separation and IAM groups'),
+ f('ip','What address ranges are reserved?','Non-overlapping CIDRs, subnet names, free-address capacity and growth reserve'),
+ f('routes','How will traffic travel in both directions?','Source → destination, next hops, inspection, failover and return routes'),
+ f('dns','How will clients resolve database names?','Private zones, conditional forwarders, resolver addresses, ownership and failover'),
+ f('security','Which access and encryption controls are approved?','Client CIDRs, ports/protocol, NSGs/firewall, TLS/mTLS, wallet/secret rotation, IAM and key ownership'),
+ f('inventory','What is the database-by-database resource plan?','Names, workload, version compatibility, ECPU/storage, schedules, peaks, environment and maintenance group; replace homogeneous cohort estimates'),
+ f('backup','What backup policy is supported and agreed?','Destination, retention, recovery window, keys, restore procedure and tested throughput'),
+ f('monitoring','What is the operational acceptance plan?','Metrics/thresholds, logs/retention, budget alerts, incident recipients, support split and maintenance'),
+ f('source','What is the source compatibility assessment?','Version, character set, size, objects/features, CPAT findings, remediation, evidence date and DBA'),
+ f('migration','Which logical migration approach is approved?','Offline Data Pump / supported online tooling','select',['Offline logical','Online logical']),
+ f('migrationAccess','What are the migration paths and throughput?','Source/export/staging/target access, encryption, capacity, data volume, bandwidth and rehearsal result'),
+ f('cutover','What is the timed cutover plan?','Window, freeze/stop writes, final copy or replication checkpoint, row/object checks, app switch, smoke tests and accountable owner'),
+ f('rollback','What are the rollback triggers and write-handling plan?','Before target writes: revert clients to unchanged source. After target writes: approved reconciliation / reverse capture or data-loss decision; owners and deadline'),
+ f('acceptance','How will the service be accepted?','Functional, load, latency, TLS/DNS/route failover, restore/recovery tests, RTO/RPO evidence and sign-off criteria'),
+ f('eligibility','Who verified the exact service model, region, features and license eligibility?','Name, date, product evidence links, quotas and exceptions')];
+ if(s.network.hybrid!=='None')fields.push(f('hybrid','What is the resilient hybrid connection design?','Existing/new circuits or VPN, bandwidth, BGP/ASN, diverse paths, route advertisements, redundancy, owner and tested failover'));
+ if(s.network.recovery!=='None')fields.push(f('dr','What supported recovery topology meets the targets?','Primary/standby location, protection scope, app/network/DNS failover, dependencies, capacity, RTO/RPO tests and funding'));
+ if(s.profile==='S')fields.push(f('endpoint','What are the per-database endpoint settings?','VCN/subnet/NSGs, access mode, TLS/mTLS service names, wallet distribution and allowed clients'),f('scaling','What is the per-database compute policy?','Validated base, scaling limits, measured peak, schedules, budget alert and approver'));
+ if(['D','C','AD'].includes(s.profile))fields.push(f('fleet','What is the approved fleet hierarchy and capacity ledger?','Infrastructure → AVMC → ACD → ADB mapping; per-node memory/CPU/storage, available/provisioned/reclaimable capacity, reserved maintenance/failover, isolated groups and maintenance windows'));
+ if(s.profile==='D')fields.push(f('clientNetwork','What is the dedicated fleet network plan?','AVMC client CIDRs/subnets, DNS, administration access and routes; not per-ADB Serverless endpoint settings'));
+ if(s.profile==='C')fields.push(f('site','Is the site installation worksheet signed off?','Rack, power, cooling, physical access, switches, uplinks, site owner, readiness dates and Oracle installation approval'),f('control','What are the approved site network fabrics and control paths?','Separate client, backup and control networks; Oracle management outbound connectivity including required TCP 443 destinations, DNS/NTP, proxy/firewall, redundancy and validated installation worksheet'));
+ if(['AS','AD','AZ','GC'].includes(s.profile))fields.push(f('native','What is the approved '+profiles[s.profile].cloud+' service network and account linkage?','Exact offer/region documentation; provider account, linked OCI account, native attachment/delegation/subnets, available addresses, DNS, routes and support demarcation'));
+ if(s.details.migration==='Online logical')fields.push(f('replication','What are the online replication prerequisites and checks?','Supported source/target tooling/version, logging, privileges, key handling, initial load, lag monitoring, cutover checkpoint and license costs'));
+ return fields;
+}
+export function detailGaps(s){return detailFields(s).filter(f=>!s.details[f.id]?.trim()||/^unknown$|^tbd$/i.test(s.details[f.id].trim()));}
+export function importState(raw){if(!raw||raw.schema!==1||!profiles[raw.profile]&&raw.profile!=='')throw Error('Unsupported project file');const base=fresh();for(const k of ['project','region','currency'])if(typeof raw[k]!=='string'||raw[k].length>500)throw Error('Invalid '+k);for(const k of ['answers','sizing','network','details'])if(!raw[k]||typeof raw[k]!=='object'||Array.isArray(raw[k]))throw Error('Invalid '+k);if(!Array.isArray(raw.lines)||raw.lines.length>200)throw Error('Invalid BOM lines');if(JSON.stringify(raw).length>1500000)throw Error('Project too large');if(!['GBP','USD','EUR','AED','AUD','CAD','INR','JPY'].includes(raw.currency))throw Error('Unsupported currency');for(const [id,a] of Object.entries(raw.answers)){if(!/^[A-Z]+[0-9]+$/.test(id)||!a||typeof a!=='object')throw Error('Invalid answer');for(const [k,v] of Object.entries(a))if(!['value','status','owner','due','evidence'].includes(k)||typeof v!=='string')throw Error('Invalid answer data');}for(const group of ['sizing','network','details'])for(const [k,v] of Object.entries(raw[group]))if(!/^[a-zA-Z][a-zA-Z0-9]*$/.test(k)||!['string','number'].includes(typeof v))throw Error('Invalid field');for(const l of raw.lines){if(!l||typeof l!=='object'||typeof l.id!=='string')throw Error('Invalid line');for(const v of Object.values(l))if(v!==null&&!['string','number','boolean'].includes(typeof v))throw Error('Invalid line value');}const s={...base,...raw,revision:Number.isSafeInteger(raw.revision)?raw.revision:1,approval:null};return s;}
+export const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function designModel(s){const p=profiles[s.profile];if(!p)return null;return {title:s.project||'Opportunity',location:s.region||'Location to confirm',boundary:p.cloud,access:s.network.access,hybrid:s.network.hybrid,network:p.network,build:p.build,endpoint:s.profile==='S'?'ADB endpoint':s.profile==='C'?'Site client network':['D','AD'].includes(s.profile)?'Fleet client network':p.cloud+' service network',db:p.name,recovery:s.network.recovery};}
+export function lldText(s){
+ if(!agreementValid(s))throw Error('Presales agreement required');
+ const p=profiles[s.profile],gaps=detailGaps(s),cap=sizing(s);
+ const val=k=>s.details[k]||'OPEN — input required';
+ const sections=detailFields(s).map(f=>`## ${f.label}\n${s.details[f.id]||'OPEN — '+f.hint}`).join('\n\n');
+ const buildSteps={
+ S:['Confirm OCI region, tenancy quota, approved compartment and database workload/license eligibility.','Review the pinned OCI landing-zone plan; approve IAM groups, compartment boundaries, budgets and logging.','Implement the approved VCN/subnet and DNS design if private access was selected. For a public exception, enforce the approved access controls and security review.','Provision each database with its measured compute/storage allocation and endpoint security settings. Record the generated connection service names.','Distribute TLS/mTLS client material through the approved secrets process; validate resolution and access from every client segment.','Set scaling limits/schedules, budget alarms, audit and backup policy; restore a test copy before production acceptance.'],
+ D:['Validate the infrastructure order or existing Exadata capacity report and region/shape availability.','Implement the approved fleet client network and private resolution; validate client and administration paths.','Allocate AVMC capacity with per-node CPU/memory/storage and maintenance/failover reserve.','Create ACDs aligned to maintenance, isolation and protection requirements; verify compatible versions.','Create each ADB within the agreed ACD and allocate measured capacity. Reconcile provisioned, available and reclaimable capacity before onboarding the next workload.','Configure supported ACD-level protection, backup policies, fleet alarms and maintenance ownership; rehearse the agreed recovery scope.'],
+ C:['Obtain customer and Oracle sign-off for site facilities, delivery, rack, power, cooling and access.','Complete Oracle installation worksheets for switches, client, backup and control networks; validate management destinations, outbound policy, DNS/NTP and redundancy.','Have the authorised installation team commission the infrastructure; record ownership and support demarcation.','Allocate AVMC and ACD groups from measured fleet capacity, isolation and maintenance needs.','Provision ADBs and validate application access through the site client network, independently from control/backup connectivity.','Validate the selected backup destination and second-site recovery support; test restores, site connectivity loss and operational escalation.'],
+ AD:['Verify the exact AWS Dedicated region, commercial offer and account/OCI linking eligibility.','Approve the AWS-native database network, client routes, DNS and joint support responsibilities.','Order or validate the dedicated infrastructure and available capacity.','Create AVMC / ACD / ADB hierarchy aligned with measured fleet reserve, isolation and maintenance groups.','Configure supported backup, encryption/log integrations and recovery features for this exact AWS offer.','Test application access and incident escalation across both providers before customer acceptance.'],
+ AS:['Verify the exact AWS Serverless offer/region and marketplace/private-offer procurement.','Complete AWS/OCI account linkage and permissions with the named owners.','Build the supported AWS-native database attachment and application/hybrid DNS and route paths.','Provision the database with validated capacity, workload and supported security/protection settings.','Test client services, supported integrations, restore/recovery and joint support escalation.'],
+ AZ:['Verify Azure subscription, region, commercial offer and Oracle account-linking prerequisites.','Approve and allocate the supported delegated subnet with sufficient free addresses and no overlaps.','Implement native application access, hybrid routes and private DNS; verify compatibility for each named Azure service.','Provision the database with validated resource, encryption and protection choices supported by this offer.','Test access, backup/recovery, budget alerts and Oracle/Azure support handoff.'],
+ GC:['Verify the Google Cloud project, offer/region eligibility, commercial route and linked OCI account.','Approve provider-native database networking and shared VPC ownership where applicable.','Implement the supported network attachment, application/hybrid routes and private resolution.','Provision the database and only the backup, key and log integrations verified for this offer.','Test client access, supported recovery and Google Cloud/Oracle incident coordination.']
+ }[s.profile];
+ const offline=['Rehearse the complete export, transfer, import and validation using representative volume. Record elapsed time and prove it fits the accepted downtime window.','Resolve CPAT / feature compatibility findings; pre-create required users/roles and application dependencies with least privileges.','At the authorised window, quiesce applications and integrations and stop source writes. Capture an agreed consistent export/checkpoint.','Export logically using reviewed Data Pump parameters; encrypt and transfer through the approved staging path. Validate file completeness and access restrictions.','Import with the validated target parameters. Capture rejected/invalid objects, compile/resolve supported objects, compare schema/object/row counts and business totals.','Run application connection and smoke tests before enabling business writes. Obtain the named go/no-go decision; switch clients and observe.'];
+ const online=['Validate supported migration/replication tooling and source/target versions, privileges, required logging, licenses and unsupported object handling.','Establish secure connectivity, initial-load consistency and a recoverable starting checkpoint; provision staging capacity and access controls.','Start change capture and the approved logical initial load. Monitor source overhead, apply errors and target catch-up.','Rehearse the final write freeze, drain, checkpoint, validation and client switch; prove lag and elapsed time meet the agreed window.','At cutover stop application and integration writes to the source. Confirm capture/apply completion to the agreed checkpoint; stop or control replication according to the tested plan.','Validate target data and application readiness; obtain explicit go/no-go before switching connections and accepting target writes. Retain reconciliation evidence.'];
+ const migration=s.details.migration==='Online logical'?online:s.details.migration==='Offline logical'?offline:['OPEN — choose a logical migration approach. No migration method has been assumed.'];
+ const list=items=>items.map((x,i)=>`${i+1}. ${x}`).join('\n');
+ const unresolved=detailGaps(s).map(f=>`- ${f.id}: ${f.label}`).join('\n')||'No unanswered design fields; technical evidence still requires review.';
+ const b=s.approval.bomSnapshot;
+ return `# ${s.project} — Detailed design and migration runbook
+
+Status: ${gaps.length?'DRAFT — '+gaps.length+' implementation answers outstanding':'REVIEW READY — technical sign-off still required'}
+Deployment: ${p.name}
+Location: ${s.region}
+Baseline revision: ${s.revision}
+Presales agreement: ${s.approval.reviewer}, ${s.approval.at}
+Accepted conditions: ${s.approval.conditions}
+
+## Capacity and commercial baseline
+Homogeneous cohort: ${s.sizing.count} databases; ${cap.base??'unresolved'} ECPU and ${cap.storage??'unresolved'} GB usable storage per database. Monthly compute runtime: ${s.sizing.hours} hours.
+Evidence: ${s.sizing.evidence||'OPEN'}
+The detailed inventory must replace the cohort assumption with per-database quantities. Validate service increments/limits, license entitlement and region before provisioning.
+${b?'Accepted priced subtotal: '+b.subtotal+' '+s.currency+' per month; '+b.lines.filter(l=>l.amount===null).length+' unpriced lines. This is not a complete commercial quote.':'BOM baseline not attached.'}
+
+## Topology and trust boundaries
+${p.network}
+Access: ${s.network.access}; Hybrid: ${s.network.hybrid}; Foundation: ${s.network.lz}; Recovery: ${s.network.recovery}
+Clients: ${s.network.clients||'OPEN'}
+DNS and routing owner: ${s.network.dns||'OPEN'}
+Topology: ${s.network.topology||'OPEN'}
+RTO: ${s.network.rto||'OPEN'}; RPO: ${s.network.rpo||'OPEN'}
+
+${sections}
+
+## Deployment execution and verification
+Proposed procedure for the selected deployment. Implement only after the above inputs, change plan and technical reviews are approved.
+${list(buildSteps)}
+
+## Traffic and access review worksheet
+| Flow | Source | Destination | Protocol / port | Control and verification |
+| --- | --- | --- | --- | --- |
+| Application access | Approved client segments | Selected database service endpoint | Use actual target connection descriptors; validate TLS/mTLS and port | Least-privilege NSG/firewall and positive/negative connection tests |
+| Name resolution | Client resolvers | Approved private/public DNS resolvers | Record required DNS protocols and approved resolver addresses | Forwarding, response correctness, TTL and failover tests |
+| Migration | Approved source/tool/staging host | Approved staging/target services | Tool-specific reviewed ports and TLS | Temporary access, encryption, throughput and removal after cutover |
+${s.profile==='C'?'| Site control | Approved control-network sources | Oracle installation-approved management destinations | Installation worksheet, including required outbound TCP 443 | Keep separate from client and backup paths; test redundancy |':'| Management | Authorised administration identities | Supported provider management APIs | HTTPS through approved egress / private services | IAM least privilege, MFA and audit trail |'}
+Exact CIDRs, endpoint names, next hops and port values come from the approved routing/security sections. Do not deploy this worksheet as a rule set.
+
+## Migration execution — ${s.details.migration||'approach unselected'}
+${list(migration)}
+
+## Cutover checkpoint record
+| Gate | Required evidence | Decision owner |
+| --- | --- | --- |
+| Before write freeze | Compatibility remediation, backup/restore rehearsal, capacity, agreed downtime, tested access and rollback plan | Change manager + DBA + application owner |
+| Before client switch | Source write freeze, final checkpoint / copy complete, validation totals and smoke tests | DBA + application owner |
+| Before target writes | Explicit go/no-go; post-write recovery/reconciliation plan accepted | Business owner + change authority |
+| After switch | Business transaction checks, latency/error baselines, lag where applicable, support bridge | Application + operations owners |
+
+## Rollback and reconciliation
+Before target writes, follow the tested connection reversal to the unchanged source and validate application consistency. After target writes, switching back requires an approved reconciliation, tested reverse-capture method or explicit business acceptance of data loss. Do not assume the old source contains new target transactions. Triggers, deadlines, owners and execution evidence: ${val('rollback')}
+
+## Acceptance and handover evidence
+1. Confirm all client segments resolve the intended endpoint; test allowed and denied connections and certificate/wallet rotation.
+2. Measure representative online/batch latency and throughput at normal and peak load; compare against the agreed service targets and compute budget.
+3. Exercise link/DNS failover where designed, restore a database copy and test the selected recovery procedure against RTO/RPO.
+4. Validate audit/log delivery, retention, alarms, backup health, spend alerts, maintenance notifications and cross-provider escalation where applicable.
+5. Obtain application, DBA, security, network and business acceptance. Retire source/staging data only after retention and rollback-expiry approval.
+Customer-specific acceptance: ${val('acceptance')}
+
+## Open design actions
+${unresolved}
+
+## Landing zone reference and implementation handoff
+${lz.repo}/tree/${lz.revision}
+${lz.scope}
+For OCI foundations, review compartments/IAM, VCN segmentation, DRG/hybrid connectivity where required, routing, DNS, keys, logging, budgets and security monitoring. Reconcile the exact pinned module inputs with customer standards before generating a reviewed Terraform plan. Keep multicloud provider-native and customer-site worksheets separate. No infrastructure is deployed by this app.
+
+## Release gates
+1. Presales agreement and all accepted open actions have owners and dates.
+2. Exact offer/region, licenses, quantities, rates, quotas and source compatibility are validated.
+3. Approved IP plan, IAM, routes/DNS/security, capacity, backup/recovery and implementation change review are complete.
+4. Non-production build and migration rehearsal pass the agreed acceptance criteria.
+5. Change authority accepts cutover/rollback plan; source retirement follows successful observation and customer sign-off.
+`;
+}
