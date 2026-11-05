@@ -11,7 +11,15 @@ A browser-based Oracle Autonomous Database discovery and design workbench with t
 
 ## Deployment paths
 
-OCI Serverless, OCI Dedicated, Exadata Cloud@Customer, AWS Serverless, AWS Dedicated, Azure Serverless and Google Cloud Serverless. Each path has its own nine sales questions plus ten shared questions. Dedicated fleet, customer-site control networks and provider-native networking remain separate. Exact offer / region / feature eligibility requires technical review.
+OCI Serverless, OCI Dedicated, Exadata Cloud@Customer, AWS Serverless, AWS Dedicated, Azure Serverless and Google Cloud Serverless. The initial sales conversation covers six simple topics, two at a time, using clickable choices and “Not sure yet”. A short brief can be prepared with unanswered topics. The architect follow-up retains each path’s nine questions plus ten shared questions, mapped to the same requirements register. Dedicated fleet, customer-site control networks and provider-native networking remain separate. Exact offer / region / feature eligibility requires technical review.
+
+## A lighter first conversation
+
+Sales starts with six plain-language topics: the desired improvement, rough database count, current application location, business impact of an interruption, timing, and data location requirements. Each screen shows two topics. Notes are optional, customers can choose **Not sure yet**, and **Skip to summary** creates a brief without forcing answers.
+
+The initial view hides per-question confidence, evidence, owners, dates and design terminology. Those controls remain available under **Architect follow-up**. **Prepare architect handoff** asks for one contact and follow-up date, then assigns unanswered/unknown topics without overwriting known answers or existing action ownership. This prepares the local project; it does not send a message or approve presales.
+
+Quick answers remain estimates, and rough database-count bands never become priced quantities or technical sizing automatically. The BOM/HLD review and explicit presales agreement still precede detailed design. All existing project answers and evidence remain compatible with the shorter flow.
 
 ## Run locally
 
@@ -74,6 +82,7 @@ Public frontend and generic code are hosted in this repository. GitHub Pages run
 
 - `web/app.js`: workflow and exports
 - `web/engine.js`: sizing, BOM, approval gates and profile-specific design logic
+- `web/sales-discovery.js`: six-topic first conversation, brief and architect handoff
 - `web/data/questions.json`: 73 sales questions with design traceability
 - `web/data/prices.json`: public Oracle catalogue snapshot; refreshed at deployment
 - `server/`: pricing MCP adapter, optional HTTP endpoint and local static preview

@@ -93,7 +93,10 @@ flowchart TB
     OPTION --> PROFILE
 
     subgraph PRE["Stage 1 — Presales"]
-        QUESTIONS["Ask 10 common questions<br/>plus 9 option-specific questions"]
+        INTRO["First conversation: 6 simple topics<br/>Two at a time; choices and optional notes"]
+        BRIEF["Create conversation brief<br/>Skip or choose Not sure yet"]
+        HANDOFF["Optional architect handoff<br/>One contact and follow-up date<br/>for unanswered and unknown topics"]
+        QUESTIONS["Architect follow-up<br/>10 common questions<br/>plus 9 option-specific questions"]
         REGISTER["Record answer, confidence,<br/>owner, due date and evidence"]
         SIZE["Capture measured workload,<br/>pilot calibration, growth and storage"]
         CAPACITY["Calculate proposed compute<br/>and usable storage quantities"]
@@ -106,6 +109,7 @@ flowchart TB
         HLD["Build HLD<br/>Selected deployment boundaries,<br/>connectivity, governance and recovery intent"]
         REVIEW["Review discovery, sizing,<br/>BOM, HLD and open actions"]
 
+        INTRO --> BRIEF --> HANDOFF --> QUESTIONS
         QUESTIONS --> REGISTER
         REGISTER --> SIZE --> CAPACITY
         REGISTER --> NETWORK
@@ -118,7 +122,7 @@ flowchart TB
         HLD --> REVIEW
     end
 
-    PROFILE --> QUESTIONS
+    PROFILE --> INTRO
     REVIEW --> READY{"Every discovery question answered<br/>or Unknown with owner and due date?<br/>Project, profile and location recorded?"}
     READY -->|No| QUESTIONS
     READY -->|Yes| ACCEPT["Named approver records acceptance<br/>and accepted conditions"]
@@ -143,6 +147,8 @@ flowchart TB
     EDIT --> INVALIDATE["Increment revision<br/>Clear agreement and lock Stage 2"]
     INVALIDATE --> REVIEW
 ```
+
+The first conversation does not require technical reports, per-question action ownership or complete answers. The six topics reuse established requirement IDs. A single-contact handoff assigns outstanding topics for architect follow-up; it does not mark them confirmed or unlock detailed design. Rough answer bands never become technical quantities automatically.
 
 Presales can be conditionally agreed with unresolved costs or technical actions. Agreement unlocks detailed design; it does not make the BOM a complete quotation. Editing detailed-design answers alone preserves the presales agreement. Changing the deployment profile resets option-specific answers, sizing, connectivity, cost lines and detailed-design answers while retaining common discovery answers. Imports always require fresh agreement.
 
@@ -213,6 +219,7 @@ There is no AI model call, shared customer project database, authenticated multi
 
 - [Browser workflow, storage, exports and live MCP client](../web/app.js)
 - [Deployment profiles, sizing, BOM, approval rules and LLD generation](../web/engine.js)
+- [Short sales conversation, brief and handoff](../web/sales-discovery.js)
 - [Sales question bank](../web/data/questions.json)
 - [Oracle catalogue retrieval and MCP tool implementation](../server/pricing.mjs)
 - [MCP stdio transport](../server/mcp.mjs)
