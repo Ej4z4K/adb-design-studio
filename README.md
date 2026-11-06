@@ -2,7 +2,7 @@
 
 A browser-based Oracle Autonomous Database discovery and design workbench with two stages:
 
-1. **Presales:** choose a deployment, complete sales discovery, capture sizing evidence and connectivity needs, produce a traceable BOM and HLD, then record agreement.
+1. **Presales:** a plain-English conversation leads to a proposed service and size, connection choice, estimated BOM, HLD, explicit assumptions and proposal agreement. Sales can start with **Help us choose**.
 2. **Detailed design:** answer implementation and migration follow-ups and export the LLD based on the agreed presales revision.
 
 [Open the app](https://Ej4z4K.github.io/adb-design-studio/)
@@ -11,15 +11,28 @@ A browser-based Oracle Autonomous Database discovery and design workbench with t
 
 ## Deployment paths
 
-OCI Serverless, OCI Dedicated, Exadata Cloud@Customer, AWS Serverless, AWS Dedicated, Azure Serverless and Google Cloud Serverless. The initial sales conversation covers six simple topics, two at a time, using clickable choices and “Not sure yet”. A short brief can be prepared with unanswered topics. The architect follow-up retains each path’s nine questions plus ten shared questions, mapped to the same requirements register. Dedicated fleet, customer-site control networks and provider-native networking remain separate. Exact offer / region / feature eligibility requires technical review.
+OCI Serverless, OCI Dedicated, Exadata Cloud@Customer, AWS Serverless, AWS Dedicated, Azure Serverless and Google Cloud Serverless. The initial conversation covers eight plain-English questions, one at a time. The service choice can remain open during discovery, but must be selected before agreement. The original 73-question bank remains available to the technical team after agreement; the mapped register also includes the connection-choice requirement F12. Dedicated fleet, customer-site control networks and provider-native networking remain separate. Exact offer / region / feature eligibility requires technical review.
 
-## A lighter first conversation
+## Simple presales, technical design after agreement
 
-Sales starts with six plain-language topics: the desired improvement, rough database count, current application location, business impact of an interruption, timing, and data location requirements. Each screen shows two topics. Notes are optional, customers can choose **Not sure yet**, and **Skip to summary** creates a brief without forcing answers.
+The whole presales journey uses plain-English screens:
 
-The initial view hides per-question confidence, evidence, owners, dates and design terminology. Those controls remain available under **Architect follow-up**. **Prepare architect handoff** asks for one contact and follow-up date, then assigns unanswered/unknown topics without overwriting known answers or existing action ownership. This prepares the local project; it does not send a message or approve presales.
+1. **Getting started:** opportunity name, optional preferred location and known service preference or **Help us choose**.
+2. **Your conversation:** eight questions on desired improvement, current application location, database count, rough data size, running pattern, interruption impact, connection preference and timing. Choose an approximate answer, **Not sure yet** or **Recommend an option**. Notes are optional and the user can skip to the proposal.
+3. **Proposed service & size:** show the information supplied and quantities still pending. Ask data-location requirements and optional budget only here. An optional presales-architect section accepts target quantities, sizing evidence and a named reviewer. Unchecked or incomplete validation never becomes billable capacity.
+4. **How you connect:** private company connection, restricted public access where supported, or help choosing. Exact addresses, routes and permissions belong in Stage 2.
+5. **Estimated costs:** plain-language scope, priced monthly subtotal and pending lines; SKU/metric details and supplier quote entry stay in an optional architect section. When nothing has been priced, the headline is **To be confirmed**, not zero.
+6. **Connection diagram:** option-specific HLD with OCI icons, connection assumption, security intent and recovery dependencies.
+7. **Review & agree:** four review areas — proposed service, estimated costs, connection approach and assumptions. One technical contact and follow-up date covers open assumptions. Conditional agreement can accept pending sizing, location or quotations without completing the technical register.
+8. **Detailed design:** only after explicit agreement. Exact network, security, fleet/site/native-provider, capacity, backup/recovery and migration questions produce the LLD and implementation runbook.
 
-Quick answers remain estimates, and rough database-count bands never become priced quantities or technical sizing automatically. The BOM/HLD review and explicit presales agreement still precede detailed design. All existing project answers and evidence remain compatible with the shorter flow.
+Private OCI access assumes an existing customer-managed VPN or FastConnect connection can reach the target OCI network. **New private connections and carrier/provider charges are excluded.** Routing, DNS, reachability, capacity and resilience still require validation. Network/security configuration and landing-zone work remain separate scope items; they are not treated as free because a circuit is assumed to exist.
+
+Cloud@Customer uses an existing site client-network assumption and retains separate site, backup and Oracle control-network readiness. Multicloud paths use an existing applicable provider-native/private connection assumption. The app does not apply OCI FastConnect requirements to every provider or customer site.
+
+Restricted public database access is offered only for **OCI Serverless** in this app. The proposal requires approved fixed public source IPs, encrypted connections with mTLS where supported, least-privilege application accounts, protected/rotated credentials, audit/alerts and named security approval before implementation. No unrestricted internet access is proposed. Public HLD and LLD paths do not impose a private database endpoint or a VPN/FastConnect circuit. A stale/imported unsupported public-access selection blocks agreement until resolved.
+
+Existing project answers and evidence are retained when upgrading. Earlier approval records require fresh review under the new proposal and assumption model. Imports always reset approval. The app records local attestations; it does not send customer messages or provide authenticated multi-user acceptance.
 
 ## Run locally
 
@@ -53,10 +66,10 @@ The MCP adapter accepts no URL or executable parameters and only fetches the fix
 
 ## Estimation boundaries
 
-- ECPU sizing uses measured workload and a pilot calibration, not a universal core conversion. The cohort model must be replaced by per-database sizing in detailed design.
+- New proposals use architect-validated exact target quantities, evidence and a named reviewer. Rough database-count or data-size bands never become compute/storage orders automatically. The underlying legacy measured-workload calibration is retained for compatibility and tests; per-database sizing and service limits are reviewed in detailed design.
 - Exact OCI compute SKUs differ by workload, deployment and license. Automatically mapped catalogue rates use their ECPU-hour metric. Serverless allocated storage uses its GB-month metric independently of compute runtime.
 - Dedicated / Cloud@Customer infrastructure, fleet reserve, backup, connectivity, recovery and delivery have explicit quote-required lines. Multicloud is not automatically priced using OCI rates.
-- The BOM labels its **priced subtotal** and excludes unresolved amounts. A zero is only recorded for an evidenced exclusion or an entered zero quote. Users can bind exact catalogue SKUs only after confirming applicability, or record a monthly recurring quote in the project currency.
+- The BOM labels its **priced subtotal** and excludes unresolved amounts. The existing private connection is explicitly marked as an assumed exclusion, displayed as **Excluded** rather than a free circuit. Other zero amounts require an evidenced exclusion or entered zero quote. Users can bind exact catalogue SKUs only after confirming applicability, or record a monthly recurring quote in the project currency.
 - Currency changes clear entered cost lines. One-time costs belong in a separate commercial proposal. Public list prices omit discounts, taxes, commitments and support terms. Catalogue age, source and retrieval timestamp are shown; older-than-30-day catalogues warn.
 - Recovery scope must be validated for the exact offer; a diagram arrow is not a claim that a standby capability is available.
 
@@ -70,9 +83,9 @@ OCI foundation reference: [Core Landing Zone](https://github.com/oci-landing-zon
 
 Answers are stored in browser localStorage, not uploaded to GitHub, an LLM or an Oracle API. Customer answers never need to be in the public source repository. Avoid using shared devices for sensitive data. Export JSON to back up or share projects. Imports deliberately reset agreement and require review. A new project clears the current browser workspace after confirmation.
 
-Presales agreement requires an answer or an owned, dated unknown for every discovery question, a selected deployment and location, a named approver, explicit acceptance and recorded conditions. Conditional agreement may accept open sizing, pricing and technical actions. Editing presales inputs, cost lines, profile or live prices revokes agreement. Detailed answers may extend the baseline. The approval stores its revision, timestamp, conditions, BOM snapshot and price provenance. Agreement is a **local attestation, not an authenticated multi-user approval**. This Pages deployment has no user accounts or shared project database; use a secured application service if your organisation needs tamper-resistant approvals.
+Presales agreement requires an opportunity name, a selected service, a supported access approach, a named approver, explicit acceptance and accepted conditions. If the conversation, sizing, region or residency information remains unresolved, one technical follow-up contact and valid date are required. It does not force sales to complete the deep technical question bank. The approval stores its revision, timestamp, conditions, BOM and size snapshots, pricing provenance, connection policy and assumption list. Editing the baseline or pricing requires agreement again; detailed-design answers extend the baseline. Agreement is a **local attestation, not authenticated multi-user approval**. Use a secured application service for identity-verified or tamper-resistant acceptance.
 
-Exports: project JSON, BOM CSV, self-contained HLD SVG, full HTML design report (print to PDF) and LLD Markdown. LLD is marked draft until required design answers are supplied; even a complete draft needs technical sign-off. Online migration, hybrid connectivity, DR and deployment-specific follow-up questions appear conditionally. Designs remain deterministic and evidence-based; no AI API key is required.
+Exports: project JSON, BOM CSV, self-contained HLD SVG, plain-English HTML proposal before agreement and full design report after agreement (print to PDF) and LLD Markdown. LLD is marked draft until required design answers are supplied; even a complete draft needs technical sign-off. Online migration, hybrid connectivity, DR and deployment-specific follow-up questions appear conditionally. Designs remain deterministic and evidence-based; no AI API key is required.
 
 ## GitHub hosting
 
@@ -82,7 +95,10 @@ Public frontend and generic code are hosted in this repository. GitHub Pages run
 
 - `web/app.js`: workflow and exports
 - `web/engine.js`: sizing, BOM, approval gates and profile-specific design logic
-- `web/sales-discovery.js`: six-topic first conversation, brief and architect handoff
+- `web/presales-model.js`: conversation, size validation, assumptions and connection rules
+- `web/presales-ui.js`: plain-English presales screens
+- `web/hld.js`: private/public/site/native-provider HLD generation
+- `web/reports.js`: customer proposal and post-agreement technical report
 - `web/data/questions.json`: 73 sales questions with design traceability
 - `web/data/prices.json`: public Oracle catalogue snapshot; refreshed at deployment
 - `server/`: pricing MCP adapter, optional HTTP endpoint and local static preview
