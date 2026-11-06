@@ -1,4 +1,4 @@
-// Shared business rules for the plain-English presales flow. No UI or network calls.
+// Shared business rules for the presales workflow. No UI or network calls.
 export const PUBLIC_ACCESS = 'Public — restricted';
 export const PRIVATE_ACCESS = 'Private';
 export const unsure = value => !String(value || '').trim() || /^(not sure|not discussed|to confirm|unknown|recommend)/i.test(String(value).trim());
@@ -38,12 +38,30 @@ export function validatedSize(s) {
  const p=s.presales||{};const valid=p.sizingValidated===true&&positive(p.validatedEcpu)&&Number.isInteger(Number(p.validatedEcpu))&&positive(p.validatedGB)&&positive(p.validatedCount)&&Number.isInteger(Number(p.validatedCount))&&positive(p.validatedHours)&&Number(p.validatedHours)<=744&&!!p.sizingEvidence?.trim()&&!!p.sizingReviewer?.trim();
  return {valid,base:valid?Number(p.validatedEcpu):null,storage:valid?Number(p.validatedGB):null,count:valid?Number(p.validatedCount):null,hours:valid?Number(p.validatedHours):null};
 }
+// Budget assumptions only: not workload sizing, service minima or deployable capacity.
+export function proposalSize(s) {
+ const checked=validatedSize(s);
+ if(checked.valid)return {...checked,indicative:false,assumptions:[`Architect-validated target: ${checked.count} databases; ${checked.base} ECPU and ${checked.storage} GB per database; ${checked.hours} compute hours/month.`]};
+ const choice=id=>introAnswer(s,introQuestions.find(q=>q.id===id)).choice;
+ const count=({'One':1,'2–5':3,'More than 5':6})[choice('F02')]||1;
+ const totalGB=({'Under 100 GB':100,'100 GB–1 TB':1000,'1–10 TB':10000,'Over 10 TB':20000})[choice('F03')]||1000;
+ const base=totalGB<=100?4:totalGB<=1000?8:totalGB<=10000?16:32;
+ const storage=Math.ceil(totalGB*1.2/count);
+ const hours=({'All the time':730,'Mainly working hours':220,'Occasionally':80})[choice('F04')]||730;
+ return {valid:false,indicative:true,count,base,storage,hours,assumptions:[
+  `Budget quantity: ${count} database(s), based on ${choice('F02')||'no quantity supplied; default 1'}. Count bands use 3 for 2–5 and 6 for more than 5; open-ended bands may materially understate demand.`,
+  `Budget storage: ${totalGB} GB total source data across all databases, plus 20% planning headroom, shared equally = ${storage} GB per database. Data bands use 100 / 1,000 / 10,000 / 20,000 GB; unknown uses 1,000 GB. Over 10 TB has no upper bound.`,
+  `Budget compute: ${base} ECPU per database. Illustrative tiers use 4 / 8 / 16 / 32 ECPU for the data bands above; storage size does not determine workload demand. This is a budget placeholder, not a source-core conversion or performance recommendation.`,
+  `Budget runtime: ${hours} compute hours per month (continuous 730; working hours 220; occasional 80; unknown 730). Storage remains allocated all month. Stopping compute must be operationally supported.`,
+  'The architect must validate workload demand, growth, database distribution, service minima, billing increments, standby copies and eligibility before ordering or implementation. Unvalidated manual target entries are not used.'
+ ]};
+}
 export function validDate(d) {return /^\d{4}-\d{2}-\d{2}$/.test(d||'')&&Number.isFinite(Date.parse(d))&&new Date(d).toISOString().slice(0,10)===d;}
 export function openAssumptions(s) {
  const items=[];for(const q of introQuestions){const a=s.answers[q.id];if(!a?.value?.trim()||a.status==='Unknown')items.push(q.title+' — to confirm.');}
  if(!s.profile)items.push('Service selection is still open; no deployment or product price has been assumed.');
  if(!s.region?.trim())items.push('Target cloud region or customer site is not confirmed.');
- if(!validatedSize(s).valid)items.push('Database quantities, compute, storage and running hours require architect validation. No data-size band or database-count band has been converted into a billable quantity.');
+ items.push(...proposalSize(s).assumptions);
  if(unsure(s.presales?.dataLocation))items.push('Data residency and location requirements need confirmation.');else items.push('Data location requirement: '+s.presales.dataLocation+(s.presales.locationNote?' — '+s.presales.locationNote:' — details to confirm')+'. The target service and region must meet this requirement.');
  items.push(accessPolicy(s).assumption);
  if(s.network.access==='To confirm')items.push('Private access is the proposed starting point; the customer has not selected an access approach.');

@@ -1,6 +1,6 @@
 # Backend and end-to-end process flow
 
-The implemented workflow is **simple presales → agreed proposal → deep technical design**. It runs in the browser, GitHub Actions and an optional MCP pricing service. There is no shared customer database or authenticated approval backend in the Pages deployment.
+The implemented workflow is **presales → agreed proposal → deep technical design**. It runs in the browser, GitHub Actions and an optional MCP pricing service. There is no shared customer database or authenticated approval backend in the Pages deployment.
 
 ## 1. Application and pricing architecture
 
@@ -26,7 +26,7 @@ flowchart TB
     ORACLE -->|Public catalogue| MCP
     subgraph BROWSER["Browser — customer-facing app and design rules"]
         LOAD["Load app, questions, icons and published prices"]
-        SALES["Plain-English conversation and proposal"]
+        SALES["Presales conversation and proposal"]
         MODEL["Size validation, BOM and connection rules"]
         HLD["Generate option-specific HLD<br/>with explicit connection assumption"]
         REVIEW["Review service, costs,<br/>connection and assumptions"]
@@ -57,17 +57,17 @@ Customer answers remain in the browser. The pricing tool fetches only the public
 flowchart TB
     START["Name opportunity<br/>Optional location and service preference"]
     HELP["Known service or Help us choose<br/>No silent deployment default"]
-    QUESTIONS["8 plain-English questions<br/>One at a time<br/>Approximate, unsure and skip allowed"]
+    QUESTIONS["8 business-focused questions<br/>One at a time<br/>Approximate, unsure and skip allowed"]
     SIZE["Proposed service and size<br/>Optional residency and budget"]
     VALID{"Architect-validated exact quantities,<br/>evidence and named reviewer?"}
     PRICED["Calculate eligible catalogue cost lines<br/>using exact units and runtime"]
-    PENDING["Leave affected costs pending<br/>Do not convert bands into orders"]
+    PENDING["Derive explicit budget quantities from bands<br/>Use disclosed defaults for unknown answers<br/>Calculate indicative catalogue or OCI reference costs"]
     CONNECT{"Choose how to connect"}
     PRIVATE["Private company connection<br/>Existing applicable connection assumed<br/>New circuits and charges excluded"]
     PUBLIC{"Restricted public access requested?<br/>OCI Serverless selected?"}
     CONTROLS["Propose IP allowlist, encrypted access,<br/>mTLS where supported, least privilege,<br/>credential rotation, audit and security approval"]
     UNSUPPORTED["Require a supported service<br/>or choose private access"]
-    BOM["Show simple BOM<br/>Priced subtotal, pending scope and exclusions"]
+    BOM["Show initial BOM<br/>Numerical monthly budget, additional scope and exclusions"]
     HLD["Show HLD with matching<br/>private/public/site/native-provider path"]
     REVIEW["Four proposal review areas<br/>Service, costs, connection, assumptions"]
     CONTACT["One technical contact and date<br/>for unresolved requirements"]
@@ -158,14 +158,14 @@ sequenceDiagram
 - Answers and approval data are saved in browser localStorage; no shared customer project database is deployed.
 - Old answers/evidence survive upgrade, but older approval records require renewed agreement under the new assumption model. Imported files always reset agreement.
 - Existing measured sizing logic is retained for legacy data and tests; the new proposal uses explicit architect-validated target quantities.
-- Presales exports contain the simple conversation, service/size proposal, costs, HLD, assumptions and agreement wording. Post-agreement reports additionally contain the LLD and technical requirements register.
+- Presales exports contain the discovery conversation, service/size proposal, costs, HLD, assumptions and agreement wording. Post-agreement reports additionally contain the LLD and technical requirements register.
 - Approval is a local attestation, not authenticated multi-user acceptance. No provisioning, migration execution or final commercial purchase occurs in this app.
 
 ## Source traceability
 
 - [Browser routing, state, approval and exports](../web/app.js)
 - [Presales conversation, validation and connection policy](../web/presales-model.js)
-- [Plain-English presales screens](../web/presales-ui.js)
+- [Presales presales screens](../web/presales-ui.js)
 - [Sizing, BOM, approval and detailed-design engine](../web/engine.js)
 - [Private/public/site/native-provider HLD generator](../web/hld.js)
 - [Customer proposal and technical report generator](../web/reports.js)

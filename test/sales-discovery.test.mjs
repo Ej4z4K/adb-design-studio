@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {fresh,profiles,preGaps,approve,change,agreementValid,importState,sizing,bom,selectedQuestions,detailFields,lldText} from '../web/engine.js';
-import {introQuestions,introAnswer,setIntroAnswer,accessPolicy,validatedSize,openAssumptions,PUBLIC_ACCESS} from '../web/presales-model.js';
+import {introQuestions,introAnswer,setIntroAnswer,accessPolicy,validatedSize,proposalSize,openAssumptions,PUBLIC_ACCESS} from '../web/presales-model.js';
 import {startView,conversationView,sizeView,connectionsView,costsView,reviewView,costSummary} from '../web/presales-ui.js';
 import {diagram} from '../web/hld.js';
 const questions=JSON.parse(await readFile(new URL('../web/data/questions.json',import.meta.url)));
@@ -12,7 +12,7 @@ function followup(s){Object.assign(s.presales,{contact:'Account architect',follo
 function confirmedSize(s){Object.assign(s.presales,{validatedCount:'2',validatedEcpu:'10',validatedGB:'1000',validatedHours:'730',sizingReviewer:'DB architect',sizingEvidence:'Measured target assessment',sizingValidated:true});return s;}
 const heading=()=>'';
 
-test('sales sees eight plain-English questions, one at a time, and may start without a service',()=>{
+test('sales sees eight discovery questions, one at a time, and may start without a service',()=>{
  const s=project('');assert.equal(introQuestions.length,8);
  for(const q of introQuestions)assert(q.options.some(o=>/Not sure|Recommend/.test(o)));
  const html=conversationView(s,0,heading);assert(html.includes('What are you looking to improve?'));assert(!html.includes('data-part="owner"'));assert(!html.includes('How many databases are involved?'));
@@ -21,14 +21,14 @@ test('sales sees eight plain-English questions, one at a time, and may start wit
  assert(costsView(s,cat,heading,()=>''));assert(diagram(s).includes('Service selection pending'));
  assert(!preGaps(followup(s),questions).every(x=>!x.includes('service')));
 });
-test('bands and unknowns never invent billable quantities; an unpriced proposal does not claim a zero total',()=>{
+test('discovery bands create explicit numerical budget quantities before architect validation',()=>{
  const s=project();setIntroAnswer(s,'F02','2–5','');setIntroAnswer(s,'F03','100 GB–1 TB','');
- assert.equal(sizing(s).base,null);assert.equal(sizing(s).storage,null);assert.equal(bom(s,cat).lines.find(l=>l.id==='compute').amount,null);assert.equal(costSummary(s,cat).headline,'To be confirmed');
+ assert.equal(sizing(s).base,8);assert.equal(sizing(s).storage,400);const b=bom(s,cat);assert.equal(b.lines.find(l=>l.id==='compute').amount,4380);assert.equal(b.lines.find(l=>l.id==='storage').amount,120);assert.equal(b.subtotal,4500);assert.equal(costSummary(s,cat).headline,'£4,500.00');assert(!validatedSize(s).valid);assert(openAssumptions(s).some(a=>a.includes('Budget quantity: 3')));
  assert.equal(importState(JSON.parse(JSON.stringify(s))).answers.F02.value,'2–5');
 });
 test('architect validation requires positive exact quantities, evidence and a named reviewer',()=>{
  const s=confirmedSize(project());assert(validatedSize(s).valid);const b=bom(s,cat);assert.equal(b.lines.find(l=>l.id==='compute').quantity,14600);assert.equal(b.lines.find(l=>l.id==='storage').quantity,2000);assert.equal(b.subtotal,3850);
- for(const [key,value] of [['validatedCount','2–5'],['validatedEcpu','-1'],['validatedHours','745'],['sizingEvidence',''],['sizingReviewer','']]){const bad=structuredClone(s);bad.presales[key]=value;assert(!validatedSize(bad).valid);assert.equal(sizing(bad).base,null);}
+ for(const [key,value] of [['validatedCount','2–5'],['validatedEcpu','-1'],['validatedHours','745'],['sizingEvidence',''],['sizingReviewer','']]){const bad=structuredClone(s);bad.presales[key]=value;assert(!validatedSize(bad).valid);assert.equal(sizing(bad).base,8);}
  setIntroAnswer(s,'F04','Mainly working hours','');assert(!validatedSize(s).valid,'Changed sales inputs require renewed size validation');
 });
 test('private connectivity is explicitly assumed and new circuit charges excluded while configuration stays unpriced',()=>{
@@ -61,7 +61,7 @@ test('proposal views escape customer input, show four review areas and do not ex
 });
 
 test('customer proposal export stays simple before approval and carries assumptions and controls into all approved outputs',async()=>{
- const {proposalReport}=await import('../web/reports.js');const s=followup(project());let html=proposalReport(s,cat,diagram(s),questions);assert(html.includes('Existing VPN / FastConnect'));assert(html.includes('Priced monthly subtotal: To be confirmed'));assert(!html.includes('Source compatibility assessment'));assert(!html.includes('sizingValidated'));assert(!html.includes('Requirements register for the technical team'));
+ const {proposalReport}=await import('../web/reports.js');const s=followup(project());let html=proposalReport(s,cat,diagram(s),questions);assert(html.includes('Existing VPN / FastConnect'));assert(html.includes('Indicative monthly subtotal: £1,580.00'));assert(html.includes('Budget runtime: 730'));assert(html.includes('Indicative budget quantities'));assert(!html.includes('Source compatibility assessment'));assert(!html.includes('sizingValidated'));assert(!html.includes('Requirements register for the technical team'));
  s.network.access=PUBLIC_ACCESS;html=proposalReport(s,cat,diagram(s),questions);assert(html.includes('approved fixed public IP'));assert(!html.includes('Existing VPN / FastConnect'));
  approve(s,questions,'Reviewer','Open items assigned to architect',true);html=proposalReport(s,cat,diagram(s),questions);assert(html.includes('Requirements register for the technical team'));assert(html.includes('Detailed design and migration'));assert(html.includes('publicAllowlist'));
 });
@@ -72,4 +72,36 @@ test('legacy burst settings are not silently added to a newly validated proposal
 
 test('site residency cannot silently become a cloud-hosted proposal; malformed imported contact types are rejected',()=>{
  const s=followup(project());s.presales.dataLocation='At our own site';s.presales.locationNote='Customer data centre';assert(preGaps(s,questions).some(g=>g.includes('stay at your site')));s.profile='C';assert(!preGaps(s,questions).some(g=>g.includes('stay at your site')));assert.throws(()=>importState({...s,presales:{...s.presales,contact:true}}));assert.throws(()=>importState({...s,presales:{...s.presales,sizingValidated:'yes'}}));
+});
+
+
+test('unknown answers have visible defaults, runtime affects compute only and changing answers recalculates',()=>{
+ const s=project();assert.deepEqual([proposalSize(s).count,proposalSize(s).base,proposalSize(s).storage,proposalSize(s).hours],[1,8,1200,730]);
+ const initial=bom(s,cat);assert.equal(initial.subtotal,1580);
+ setIntroAnswer(s,'F04','Mainly working hours','');let b=bom(s,cat);assert.equal(b.lines.find(l=>l.id==='compute').amount,440);assert.equal(b.lines.find(l=>l.id==='storage').amount,120);
+ setIntroAnswer(s,'F03','Over 10 TB','');setIntroAnswer(s,'F02','More than 5','');assert.equal(proposalSize(s).base,32);assert.equal(proposalSize(s).count,6);assert.equal(proposalSize(s).storage,4000);assert(proposalSize(s).assumptions.some(a=>a.includes('no upper bound')));
+ s.presales.validatedEcpu='99999';assert.equal(proposalSize(s).base,32,'unchecked manual quantities must not override budget assumptions');
+});
+
+test('every selected deployment has a numerical compute budget, with provider reference pricing distinguished',()=>{
+ const catalogue={...cat,products:[...cat.products,...['B95713','B95709'].map(sku=>({sku,unit:'ECPU Per Hour',rates:{GBP:0.3}}))]};
+ for(const profile of Object.keys(profiles)){
+  const s=project(profile),b=bom(s,catalogue),compute=b.lines.find(l=>l.id==='compute');assert(compute.amount>0,profile);assert(compute.quantity>0);assert(!b.complete);
+  assert.equal(!!compute.benchmark,['AS','AD','AZ','GC'].includes(profile));
+  if(compute.benchmark){assert(compute.basis.includes('not a verified'));assert(costsView(s,catalogue,heading,()=>'').includes('Reference pricing only'));}
+  if(['D','C','AD'].includes(profile))assert.equal(b.lines.find(l=>l.id==='storage').amount,null,'infrastructure storage cannot inherit Serverless billing');
+ }
+});
+
+test('missing prices remain unavailable, quote overrides replace reference lines and old agreements need review',()=>{
+ const s=followup(project());assert.equal(costSummary(s,{products:[]}).headline,'To be confirmed');assert.equal(bom(s,{products:[]}).lines.find(l=>l.id==='compute').amount,null);
+ s.profile='AZ';s.lines=[{id:'compute',kind:'quote',quantity:1,rate:999,evidence:'Provider offer 123',label:'Provider compute'}];const b=bom(s,cat);assert.equal(b.lines.find(l=>l.id==='compute').amount,999);assert(!b.lines.find(l=>l.id==='compute').benchmark);
+ s.approval={baselineVersion:2,revision:s.revision};assert(!agreementValid(s));approve(s,questions,'Reviewer','Budget assumptions accepted',true);assert(agreementValid(s));assert.equal(s.approval.estimateVersion,1);
+});
+
+
+test('customer-facing headings use professional wording',()=>{
+ const s=project();const headings=(k,t,sub)=>k+' '+t+' '+sub;
+ const html=startView(s,headings)+sizeView(s,headings)+costsView(s,cat,headings,()=>'')+reviewView(s,cat,questions,headings);
+ assert(!/plain[ -]english|dumb|dummed/i.test(html));assert(html.includes('Initial bill of materials and cost estimate.'));
 });
